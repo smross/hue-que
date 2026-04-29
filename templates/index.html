@@ -2,24 +2,138 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="5"> <title>Hue-Queue Artist Feed</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Hue-Queue Artist Feed</title>
     <style>
-        body { background: #1a1a1a; color: #fff; font-family: system-ui, sans-serif; padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
-        .card { background: #2d2d2d; border-radius: 12px; overflow: hidden; border: 2px solid #444; }
-        .card img { width: 100%; height: auto; display: block; }
-        .label { padding: 15px; text-align: center; font-size: 2em; font-weight: bold; color: #00ffcc; }
+        /* Pro-Black Theme */
+        body { 
+            background: #000; 
+            color: #fff; 
+            font-family: -apple-system, system-ui, sans-serif; 
+            padding: 20px; 
+            margin: 0; 
+        }
+
+        /* Responsive Grid */
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+            gap: 25px; 
+        }
+
+        .card { 
+            background: #1a1a1a; 
+            border-radius: 16px; 
+            overflow: hidden; 
+            border: 3px solid #333; 
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .card:active { transform: scale(0.98); }
+
+        .card img { 
+            width: 100%; 
+            height: auto; 
+            display: block; 
+            aspect-ratio: 4 / 3;
+            object-fit: cover;
+        }
+
+        /* Grid Labels */
+        .label { 
+            padding: 15px; 
+            text-align: center; 
+            font-size: 2.5em; 
+            font-weight: 900; 
+            color: #00ffcc; 
+            background: #111;
+        }
+
+        /* Reference View Modal */
+        #overlay {
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.98); 
+            z-index: 1000; 
+            justify-content: center; 
+            align-items: center;
+        }
+        #overlay img { 
+            max-width: 100%; 
+            max-height: 100%; 
+            object-fit: contain; 
+        }
+
+        /* The Bottom-Right ID Label */
+        #overlay-filename {
+            position: absolute;
+            bottom: 40px; /* Elevated slightly for iPad thumb comfort */
+            right: 40px;  /* Pinned to the right */
+            background: rgba(0, 255, 204, 0.95); /* High opacity Neon Cyan */
+            color: #000; /* High contrast black text */
+            padding: 12px 30px;
+            font-size: 2.5em;
+            font-weight: 900;
+            border-radius: 14px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+            pointer-events: none;
+            z-index: 1002;
+        }
+
+        .close-btn { 
+            position: absolute; 
+            top: 20px; right: 20px; 
+            font-size: 3em; 
+            cursor: pointer; 
+            color: #ff4444;
+            font-weight: bold;
+            z-index: 1001;
+            text-shadow: 0 0 20px #000;
+        }
     </style>
 </head>
 <body>
-    <div class="grid">
+
+    <div class="grid" id="photo-grid">
         {% for photo in photos %}
-        <div class="card">
+        <div class="card" onclick="openImage('{{ url_for('static', filename='photos/' + photo) }}', '{{ photo.split('.')[0] }}')">
             <img src="{{ url_for('static', filename='photos/' + photo) }}">
             <div class="label">#{{ photo.split('.')[0] }}</div>
         </div>
         {% endfor %}
     </div>
+
+    <div id="overlay" onclick="closeImage()">
+        <span class="close-btn">&times;</span>
+        <div id="overlay-filename"></div>
+        <img id="overlay-img" src="">
+    </div>
+
+    <script>
+        let isViewOpen = false;
+
+        function openImage(src, filename) {
+            document.getElementById('overlay-img').src = src;
+            document.getElementById('overlay-filename').innerText = "#" + filename;
+            document.getElementById('overlay').style.display = 'flex';
+            isViewOpen = true;
+        }
+
+        function closeImage() {
+            document.getElementById('overlay').style.display = 'none';
+            isViewOpen = false;
+        }
+
+        // Smart Heartbeat: Refreshes the grid every 5 seconds 
+        // ONLY if the artist isn't in full-screen reference mode.
+        setInterval(function() {
+            if (!isViewOpen) {
+                console.log("Auto-refreshing grid...");
+                location.reload();
+            }
+        }, 5000); 
+    </script>
 </body>
 </html>

@@ -4,34 +4,39 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 # --- CONFIGURATION ---
-# Using abspath ensures the script finds the folders regardless of where it's launched
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 WATCH_FOLDER = os.path.join(BASE_DIR, "incoming")
 DEST_FOLDER = os.path.join(BASE_DIR, "static/photos")
 
+# Unambiguous alphabet (Removed: I, L, O, U, V)
+CLEAN_ALPHABET = "ABCDEFGHJKMNPQRSTWXYZ"
+
 class GuestManager:
     def __init__(self):
         self.current_id = "000"
-        self.counter = 1
+        self.counter = 0 # Starts at 0 to index into alphabet
 
     def set_guest(self, new_id):
-        # Auto-pads (e.g., "5" becomes "005") for better file sorting
         self.current_id = str(new_id).zfill(3)
-        self.counter = 1
+        self.counter = 0
         print(f"\n[ READY ] Now shooting Guest #{self.current_id}")
 
 manager = GuestManager()
 
 def process_file(file_path):
-    """The logic to rename and move the file."""
+    """The logic to rename and teleport the file with a letter suffix."""
     if not file_path.lower().endswith(('.jpg', '.jpeg')):
         return
 
-    # Small delay to ensure the file is fully written to disk
     time.sleep(0.7) 
     
+    # Get the letter based on the counter
+    # If a guest has more than 21 photos, it will start over at A
+    letter_index = manager.counter % len(CLEAN_ALPHABET)
+    suffix = CLEAN_ALPHABET[letter_index]
+    
     ext = os.path.splitext(file_path)[1]
-    new_filename = f"{manager.current_id}_{manager.counter}{ext}"
+    new_filename = f"{manager.current_id}_{suffix}{ext}"
     dest_path = os.path.join(DEST_FOLDER, new_filename)
     
     try:

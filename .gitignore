@@ -8,3 +8,4 @@ incoming/*.JPG
 static/photos/*.jpg
 static/photos/*.JPG
 .DS_Store
+.aider*

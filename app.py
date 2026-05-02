@@ -39,4 +39,4 @@ if __name__ == '__main__':
     # Start the watcher in the background
     Thread(target=start_watcher, daemon=True).start()
     # Run the web server
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)
